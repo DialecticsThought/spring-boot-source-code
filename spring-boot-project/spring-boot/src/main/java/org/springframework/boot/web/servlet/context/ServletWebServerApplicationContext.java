@@ -157,8 +157,10 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 
 	@Override
 	protected void onRefresh() {
+		//TODO 进入 查看ServletWebServerApplicationContext
 		super.onRefresh();
 		try {
+			// TODO 进入
 			createWebServer();
 		}
 		catch (Throwable ex) {
@@ -179,8 +181,17 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 		ServletContext servletContext = getServletContext();
 		if (webServer == null && servletContext == null) {
 			StartupStep createWebServer = this.getApplicationStartup().start("spring.boot.webserver.create");
+			// 获取到web容器工厂。
+			// 实际上就是从ServletWebServerFactoryAutoConfiguration这个自动配置类导入的EmbeddedTomcat
+			// 这个内嵌Tomcat类中注入的TomcatServletWebServerFactory
+			// TODO 进入
 			ServletWebServerFactory factory = getWebServerFactory();
 			createWebServer.tag("factory", factory.getClass().toString());
+			// 获取具体的web容器，例如TomcatWebServer等
+			/**
+			 * {@link TomcatServletWebServerFactory#getWebServer(ServletContextInitializer...)}
+			 * */
+			// TODO 进入 查看关于Tomcat
 			this.webServer = factory.getWebServer(getSelfInitializer());
 			createWebServer.end();
 			getBeanFactory().registerSingleton("webServerGracefulShutdown",
@@ -206,6 +217,19 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 	 * @return a {@link ServletWebServerFactory} (never {@code null})
 	 */
 	protected ServletWebServerFactory getWebServerFactory() {
+		/**
+		 * 可以看到，通过在spring容器中查找ServletWebServerFactory工厂，并且有且只有一个web容器工厂。
+		 *
+		 * 那么这个容器工厂是在哪里注入的呢？
+		 *
+		 * 这个就跟自动装配有关了，SpringBoot在启动的时候，
+		 * 会加载spring.factories文件中EnableAutoConfiguration对应的那些配置类，
+		 * 其中就包括了跟Tomcat有关的几个：
+		 * EmbeddedWebServerFactoryCustomizerAutoConfiguration、ServletWebServerFactoryAutoConfiguration，
+		 * Spring会在满足ConditionalXXX条件的情况下，注入对应的容器工厂
+		 *
+		 * TODO 查看 ServletWebServerFactoryAutoConfiguration
+		 */
 		// Use bean names so that we don't consider the hierarchy
 		String[] beanNames = getBeanFactory().getBeanNamesForType(ServletWebServerFactory.class);
 		if (beanNames.length == 0) {

@@ -337,7 +337,8 @@ public class SpringApplication {
 			//TODO 进入
 			prepareContext(bootstrapContext, context, environment, listeners, applicationArguments, printedBanner);
 			// 刷新应用上下文。完成Spring IOC容器的初始化
-			// TODO12大步
+			// TODO 12大步 + 初始化tomcat
+			// TODO 进入
 			refreshContext(context);
 			afterRefresh(context, applicationArguments);
 			// 停止记录执行时间
@@ -449,6 +450,7 @@ public class SpringApplication {
 		if (this.registerShutdownHook) {
 			shutdownHook.registerApplicationContext(context);
 		}
+		//TODO 进入
 		refresh(context);
 	}
 
@@ -774,6 +776,7 @@ public class SpringApplication {
 	 * @param applicationContext the application context to refresh
 	 */
 	protected void refresh(ConfigurableApplicationContext applicationContext) {
+		// TODO 进入 查看ServletWebServerApplicationContext
 		applicationContext.refresh();
 	}
 

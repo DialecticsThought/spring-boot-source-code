@@ -101,10 +101,13 @@ public class TomcatWebServer implements WebServer {
 		this.tomcat = tomcat;
 		this.autoStart = autoStart;
 		this.gracefulShutdown = (shutdown == Shutdown.GRACEFUL) ? new GracefulShutdown(tomcat) : null;
+		// Tomcat容器初始化
+		// TODO 进入
 		initialize();
 	}
 
 	private void initialize() throws WebServerException {
+		// 这个日志就是我们springboot项目启动日志中看到的
 		logger.info("Tomcat initialized with port(s): " + getPortsDescription(false));
 		synchronized (this.monitor) {
 			try {
@@ -118,7 +121,7 @@ public class TomcatWebServer implements WebServer {
 						removeServiceConnectors();
 					}
 				});
-
+				// 启动Tomcat服务器触发初始化监听器
 				// Start the server to trigger initialization listeners
 				this.tomcat.start();
 
@@ -369,10 +372,10 @@ public class TomcatWebServer implements WebServer {
 
 	private String getContextPath() {
 		return Arrays.stream(this.tomcat.getHost().findChildren())
-			.filter(TomcatEmbeddedContext.class::isInstance)
-			.map(TomcatEmbeddedContext.class::cast)
-			.map(TomcatEmbeddedContext::getPath)
-			.collect(Collectors.joining(" "));
+				.filter(TomcatEmbeddedContext.class::isInstance)
+				.map(TomcatEmbeddedContext.class::cast)
+				.map(TomcatEmbeddedContext::getPath)
+				.collect(Collectors.joining(" "));
 	}
 
 	/**
