@@ -54,7 +54,13 @@ public enum WebApplicationType {
 
 	private static final String JERSEY_INDICATOR_CLASS = "org.glassfish.jersey.servlet.ServletContainer";
 
+	/**
+	 *  根据classpath推导出web项目的类型。Servlet项目或者Reactive项目
+	 * @return
+	 */
 	static WebApplicationType deduceFromClasspath() {
+		// 一些绑定的Java类的全类路径
+		// ClassUtils.isPresent(): 通过反射的方式获取对应的类型的Class对象，如果存在返回true，否则返回false
 		if (ClassUtils.isPresent(WEBFLUX_INDICATOR_CLASS, null) && !ClassUtils.isPresent(WEBMVC_INDICATOR_CLASS, null)
 				&& !ClassUtils.isPresent(JERSEY_INDICATOR_CLASS, null)) {
 			return WebApplicationType.REACTIVE;
