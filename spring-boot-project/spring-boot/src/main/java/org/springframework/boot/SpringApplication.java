@@ -379,17 +379,32 @@ public class SpringApplication {
 	private ConfigurableEnvironment prepareEnvironment(SpringApplicationRunListeners listeners,
 			DefaultBootstrapContext bootstrapContext, ApplicationArguments applicationArguments) {
 		// Create and configure the environment
+		// 这一行代码负责创建一个新的环境或者获取已有的环境。
+		// ConfigurableEnvironment 对象用于保存环境信息，包括属性和配置文件。
+		// getOrCreateEnvironment() 方法会检查环境是否已经存在，如果不存在则创建一个新的
+		// TODO 进入
 		ConfigurableEnvironment environment = getOrCreateEnvironment();
+		// 在创建或获取环境后，通过 configureEnvironment() 方法对环境进行配置。
+		// 这个方法接受环境对象和应用程序的参数（通过 applicationArguments.getSourceArgs() 获取），
+		// 这些参数通常是启动 Spring Boot 应用时传递的命令行参数
 		configureEnvironment(environment, applicationArguments.getSourceArgs());
+		// 这一行将 ConfigurationPropertySources 附加到环境中，增强了环境的配置属性。
+		// ConfigurationPropertySources 是一种用于管理和组织环境中属性源的机制，比如配置文件、系统环境变量等
 		ConfigurationPropertySources.attach(environment);
 		// 在配置环境信息之前发布事件 通知所有的监听器当前环境准备完成
 		listeners.environmentPrepared(bootstrapContext, environment);
+		//这一行将默认属性移到环境的属性源链的末尾。
+		// DefaultPropertiesPropertySource 通常包含回退属性，这些属性应该被更具体的属性源（如命令行参数或应用程序配置文件）覆盖
 		DefaultPropertiesPropertySource.moveToEnd(environment);
 		Assert.state(!environment.containsProperty("spring.main.environment-prefix"),
 				"Environment prefix cannot be set via properties.");
+		// 这一行代码将环境属性绑定到 SpringApplication 本身，确保环境中的某些配置属性能够反映在应用程序的内部配置中
 		bindToSpringApplication(environment);
-		if (!this.isCustomEnvironment) {
+		if (!this.isCustomEnvironment) {// 检查是否使用了自定义环境
+			// EnvironmentConverter 类用于根据应用程序的需要处理环境的必要转换。
+			// educeEnvironmentClass() 方法负责推断适当的环境类，例如 StandardEnvironment 或 WebEnvironment
 			EnvironmentConverter environmentConverter = new EnvironmentConverter(getClassLoader());
+			// 这一行重新将 ConfigurationPropertySources 附加到（可能已转换的）环境上，确保转换过程中的任何更改都正确地反映在环境的属性源中
 			environment = environmentConverter.convertEnvironmentIfNecessary(environment, deduceEnvironmentClass());
 		}
 		ConfigurationPropertySources.attach(environment);
@@ -468,14 +483,28 @@ public class SpringApplication {
 	}
 
 	private <T> Collection<T> getSpringFactoriesInstances(Class<T> type) {
+		// TODO 进入
 		return getSpringFactoriesInstances(type, new Class<?>[] {});
 	}
 
 	private <T> Collection<T> getSpringFactoriesInstances(Class<T> type, Class<?>[] parameterTypes, Object... args) {
+		// 这一行代码获取当前应用程序的 ClassLoader
 		ClassLoader classLoader = getClassLoader();
 		// Use names and ensure unique to protect against duplicates
+		// 从 META-INF/spring.factories 文件中加载指定类型的工厂名称（类名）
+		// type 是方法的参数，用来指定要加载的类型（比如某个接口或类）
+		// 加载的类名放入 LinkedHashSet，以确保没有重复的工厂类名。
+		// SpringFactoriesLoader 是 Spring Boot 的一个内部工具类，它负责从 spring.factories 文件中解析类名。
+		// 这个文件包含了各类 SPI（Service Provider Interface）的实现，帮助 Spring Boot 根据类型动态加载和实例化所需的组件
+		// TODO 进入SpringFactoriesLoader.loadFactoryNames 查看spring的源码
 		Set<String> names = new LinkedHashSet<>(SpringFactoriesLoader.loadFactoryNames(type, classLoader));
+		// 该方法将根据前面加载的工厂类名 names，使用反射机制实例化它们
+		// 此时，会传递给定的 parameterTypes（构造函数参数类型数组）和 args（具体的构造函数参数）来实例化每个工厂类
+		// type 是工厂的类型，classLoader 则用于加载这些类
+		// TODo 进入
 		List<T> instances = createSpringFactoriesInstances(type, parameterTypes, classLoader, args, names);
+		// AnnotationAwareOrderComparator 是 Spring 的排序工具类，能够根据 @Order 注解或实现 Ordered 接口来对实例进行排序。
+		// 这样做的目的是确保工厂实例按照正确的顺序执行，因为某些组件可能需要按特定的顺序初始化
 		AnnotationAwareOrderComparator.sort(instances);
 		return instances;
 	}
@@ -484,12 +513,25 @@ public class SpringApplication {
 	private <T> List<T> createSpringFactoriesInstances(Class<T> type, Class<?>[] parameterTypes,
 			ClassLoader classLoader, Object[] args, Set<String> names) {
 		List<T> instances = new ArrayList<>(names.size());
+		// 通过 for 循环遍历 names 集合
+		// names 是所有工厂类的完全限定名（即类的全限定路径，例如 "com.example.MyFactory"）
+		// 每个 name 都表示一个需要加载和实例化的工厂类
 		for (String name : names) {
 			try {
+				// 通过 ClassUtils.forName() 使用类加载器将类名 name 加载为 Class<?> 对象
+				// ClassUtils 是一个 Spring 的工具类，用于将类名字符串转换为 Class 对象。
+				// classLoader 用于加载类
 				Class<?> instanceClass = ClassUtils.forName(name, classLoader);
+				// 确保 instanceClass 类型是目标类型 type 的子类或者实现了接口 type
 				Assert.isAssignable(type, instanceClass);
+				// 获取 instanceClass 类中符合指定构造函数参数类型 parameterTypes 的构造方法
+				// getDeclaredConstructor() 方法返回一个 Constructor<?> 对象，该对象可以用于实例化对象
+				// 这里通过指定的 parameterTypes 来确保找到合适的构造函数
 				Constructor<?> constructor = instanceClass.getDeclaredConstructor(parameterTypes);
+				// 使用 BeanUtils.instantiateClass() 方法调用刚才获取的构造函数，并传入 args 参数，创建新的实例对象
 				T instance = (T) BeanUtils.instantiateClass(constructor, args);
+				// 将成功创建的工厂实例对象添加到 instances 列表中
+				// 每个成功实例化的工厂类都会被加入到该集合中，最终这个集合将包含所有实例化的工厂类
 				instances.add(instance);
 			}
 			catch (Throwable ex) {
@@ -500,11 +542,20 @@ public class SpringApplication {
 	}
 
 	private ConfigurableEnvironment getOrCreateEnvironment() {
+		// 这一行代码首先检查当前 SpringApplication 实例中是否已经有一个现有的环境对象 this.environment。
+		// 如果存在，则直接返回这个现有的环境对象，避免重复创建环境
 		if (this.environment != null) {
 			return this.environment;
 		}
+		// 这里使用 applicationContextFactory 根据应用程序的类型（this.webApplicationType）来创建适合的 ConfigurableEnvironment
+		// webApplicationType 通常决定应用程序是普通的 StandardEnvironment 还是 WebEnvironment（例如 WebFlux 或 Servlet 环境）
 		ConfigurableEnvironment environment = this.applicationContextFactory.createEnvironment(this.webApplicationType);
+		// 刚才创建的 environment 是否为 null
+		//  applicationContextFactory 不是默认的工厂
 		if (environment == null && this.applicationContextFactory != ApplicationContextFactory.DEFAULT) {
+			// ApplicationContextFactory.DEFAULT.createEnvironment(this.webApplicationType) 方法基于应用程序类型创建合适的环境
+			// TODO 进入
+			//  org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext.Factory.createEnvironment
 			environment = ApplicationContextFactory.DEFAULT.createEnvironment(this.webApplicationType);
 		}
 		return (environment != null) ? environment : new ApplicationEnvironment();
