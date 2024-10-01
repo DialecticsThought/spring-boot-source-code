@@ -272,6 +272,7 @@ public class SpringApplication {
 		// 并将加载的数据存储在了 initializers 成员变量中
 		setInitializers((Collection) getSpringFactoriesInstances(ApplicationContextInitializer.class));
 		// 初始化监听器，并将加载的监听器实例对象存储在了listeners成员变量中
+		// TODO 如果要看加载配置文件的源码 需要查看一个配置文件加载监听器 ConfigFileApplicationListener
 		setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));
 		// 反推出main方法所在的Class对象
 		// TODO 进入

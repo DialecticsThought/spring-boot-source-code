@@ -191,7 +191,6 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 		if (this.disableMBeanRegistry) {
 			Registry.disableRegistry();
 		}
-
 		// 创建Tomcat容器
 		Tomcat tomcat = new Tomcat();
 		// 创建Tomcat工作目录
