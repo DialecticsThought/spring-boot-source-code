@@ -555,12 +555,13 @@ public class SpringApplication {
 		// webApplicationType 通常决定应用程序是普通的 StandardEnvironment 还是 WebEnvironment（例如 WebFlux 或 Servlet 环境）
 		ConfigurableEnvironment environment = this.applicationContextFactory.createEnvironment(this.webApplicationType);
 		// 刚才创建的 environment 是否为 null
-		//  applicationContextFactory 不是默认的工厂
+		// applicationContextFactory 不是默认的工厂
 		if (environment == null && this.applicationContextFactory != ApplicationContextFactory.DEFAULT) {
 			// ApplicationContextFactory.DEFAULT.createEnvironment(this.webApplicationType) 方法基于应用程序类型创建合适的环境
 			// TODO 进入
 			//  org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext.Factory.createEnvironment已经被废弃
-			// org.springframework.boot.env.EnvironmentPostProcessorApplicationListener
+			//  org.springframework.boot.env.EnvironmentPostProcessorApplicationListener
+			// TODO 查看 SPI定义的org.springframework.boot.env.YamlPropertySourceLoader和PropertiesPropertySourceLoader
 			environment = ApplicationContextFactory.DEFAULT.createEnvironment(this.webApplicationType);
 		}
 		return (environment != null) ? environment : new ApplicationEnvironment();

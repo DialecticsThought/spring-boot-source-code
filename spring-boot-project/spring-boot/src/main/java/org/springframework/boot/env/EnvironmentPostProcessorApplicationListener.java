@@ -82,12 +82,13 @@ public class EnvironmentPostProcessorApplicationListener implements SmartApplica
 	}
 
 	/**
-	 * 查看
+	 * TODO 查看
 	 * @param event
 	 */
 	@Override
 	public void onApplicationEvent(ApplicationEvent event) {
 		if (event instanceof ApplicationEnvironmentPreparedEvent) {
+			// TODO 进入
 			onApplicationEnvironmentPreparedEvent((ApplicationEnvironmentPreparedEvent) event);
 		}
 		if (event instanceof ApplicationPreparedEvent) {
