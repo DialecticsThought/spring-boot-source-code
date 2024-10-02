@@ -307,6 +307,7 @@ public class SpringApplication {
 	public ConfigurableApplicationContext run(String... args) {
 		// 创建一个任务执行观察器,用于统计run启动过程花了多少时间
 		long startTime = System.nanoTime();
+		// TODO 进入
 		DefaultBootstrapContext bootstrapContext = createBootstrapContext();
 		ConfigurableApplicationContext context = null;
 		// 设置了一个名为java.awt.headless的系统属性,
@@ -388,9 +389,11 @@ public class SpringApplication {
 		// 在创建或获取环境后，通过 configureEnvironment() 方法对环境进行配置。
 		// 这个方法接受环境对象和应用程序的参数（通过 applicationArguments.getSourceArgs() 获取），
 		// 这些参数通常是启动 Spring Boot 应用时传递的命令行参数
+		// TODO 进入 ，它主要用于配置 Environment 对象。该方法会依次调用两个方法来配置属性源和激活的配置文件（profiles）
 		configureEnvironment(environment, applicationArguments.getSourceArgs());
 		// 这一行将 ConfigurationPropertySources 附加到环境中，增强了环境的配置属性。
 		// ConfigurationPropertySources 是一种用于管理和组织环境中属性源的机制，比如配置文件、系统环境变量等
+		// TODO 进入
 		ConfigurationPropertySources.attach(environment);
 		// 在配置环境信息之前发布事件 通知所有的监听器当前环境准备完成
 		listeners.environmentPrepared(bootstrapContext, environment);
@@ -556,7 +559,8 @@ public class SpringApplication {
 		if (environment == null && this.applicationContextFactory != ApplicationContextFactory.DEFAULT) {
 			// ApplicationContextFactory.DEFAULT.createEnvironment(this.webApplicationType) 方法基于应用程序类型创建合适的环境
 			// TODO 进入
-			//  org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext.Factory.createEnvironment
+			//  org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext.Factory.createEnvironment已经被废弃
+			// org.springframework.boot.env.EnvironmentPostProcessorApplicationListener
 			environment = ApplicationContextFactory.DEFAULT.createEnvironment(this.webApplicationType);
 		}
 		return (environment != null) ? environment : new ApplicationEnvironment();
@@ -569,15 +573,32 @@ public class SpringApplication {
 	 * Override this method for complete control over Environment customization, or one of
 	 * the above for fine-grained control over property sources or profiles, respectively.
 	 * @param environment this application's environment
-	 * @param args arguments passed to the {@code run} method
+	 * 		TODO 当前应用程序的 Environment 对象，Spring Boot 会使用该 Environment 来管理应用程序的配置属性和激活的配置文件（profiles）
+	 * @param args arguments passed to the {@code run} method ，
+	 * 		TODO 它主要用于配置 Environment 对象。该方法会依次调用两个方法来配置属性源和激活的配置文件（profiles）
 	 * @see #configureProfiles(ConfigurableEnvironment, String[])
 	 * @see #configurePropertySources(ConfigurableEnvironment, String[])
+	 *
+	 * 它主要用于配置 Environment 对象。该方法会依次调用两个方法来配置属性源和激活的配置文件（profiles）
 	 */
 	protected void configureEnvironment(ConfigurableEnvironment environment, String[] args) {
+		// this.addConversionService 是一个布尔变量，
+		// 表示是否需要为 Environment 添加一个 ConversionService。
+		// ConversionService 用于在属性绑定时进行类型转换
 		if (this.addConversionService) {
+			// 为 Environment 设置一个新的 ApplicationConversionService，它是一个专门处理属性转换的服务
+			// ApplicationConversionService 提供了丰富的类型转换功能，比如字符串到枚举、字符串到日期等
 			environment.setConversionService(new ApplicationConversionService());
 		}
+		// 用 configurePropertySources 方法来配置 PropertySources
+		// PropertySources 是 Environment 中的一个关键组件，它包含了一组 PropertySource，用于存储应用程序的属性（如 application.properties 或环境变量）
+		// 这个方法通常会加载配置文件中的属性、系统环境变量、命令行参数等，并将它们添加到 PropertySources 中
+		// TODO 进入
 		configurePropertySources(environment, args);
+		// 调用 configureProfiles 方法来配置激活的配置文件（profiles）。
+		// profiles 是 Spring Boot 中的一项强大功能，
+		// 允许你根据不同的环境（开发、生产等）激活不同的配置文件（如 application-dev.yml、application-prod.yml）
+		// TODO 空方法
 		configureProfiles(environment, args);
 	}
 
@@ -589,21 +610,38 @@ public class SpringApplication {
 	 * @see #configureEnvironment(ConfigurableEnvironment, String[])
 	 */
 	protected void configurePropertySources(ConfigurableEnvironment environment, String[] args) {
+		// 获取 environment 的 PropertySources 集合。
+		// PropertySources 是一个有序的属性源列表，用来管理不同来源的属性，例如配置文件、命令行参数、系统环境变量等
 		MutablePropertySources sources = environment.getPropertySources();
+		// 检查 defaultProperties 是否为空。defaultProperties 是一个 Map，通常用于存储应用程序的默认属性
 		if (!CollectionUtils.isEmpty(this.defaultProperties)) {
+			// 该方法会将 defaultProperties 添加到属性源中，或者将其与现有的默认属性合并
+			// 默认属性一般是应用程序级别的最后备用属性，当其他源找不到时，Spring Boot 会从这里获取属性值
 			DefaultPropertiesPropertySource.addOrMerge(this.defaultProperties, sources);
 		}
 		if (this.addCommandLineProperties && args.length > 0) {
+			// CommandLinePropertySource.COMMAND_LINE_PROPERTY_SOURCE_NAME 是一个常量，表示命令行属性源的名称，通常为 "commandLineArgs"
 			String name = CommandLinePropertySource.COMMAND_LINE_PROPERTY_SOURCE_NAME;
+			// 检查 PropertySources 中是否已经包含了名为 commandLineArgs 的命令行属性源。
 			if (sources.contains(name)) {
+				// 获取现有的命令行属性源 source
 				PropertySource<?> source = sources.get(name);
+				// 创建一个新的 CompositePropertySource，用于将多个属性源组合成一个。
+				// 在这种情况下，创建的 CompositePropertySource 将包含现有的命令行参数和新的命令行参数
 				CompositePropertySource composite = new CompositePropertySource(name);
+				// 将新的命令行参数包装为 SimpleCommandLinePropertySource，并添加到 CompositePropertySource 中。
+				// SimpleCommandLinePropertySource 是一个专门用于处理命令行参数的 PropertySource
 				composite
 						.addPropertySource(new SimpleCommandLinePropertySource("springApplicationCommandLineArgs", args));
+				// 将原始的命令行属性源 source 也添加到 composite 中。
+				// 这样，新的命令行参数和原有的命令行参数会被合并在一起，形成一个组合属性源
 				composite.addPropertySource(source);
+				// 用组合后的 CompositePropertySource 替换原有的命令行属性源。这样可以确保命令行参数都被合并处理
 				sources.replace(name, composite);
 			}
 			else {
+				// 如果 PropertySources 中不存在命令行属性源，
+				// 则直接将新的 SimpleCommandLinePropertySource 添加到 PropertySources 的最前面
 				sources.addFirst(new SimpleCommandLinePropertySource(args));
 			}
 		}

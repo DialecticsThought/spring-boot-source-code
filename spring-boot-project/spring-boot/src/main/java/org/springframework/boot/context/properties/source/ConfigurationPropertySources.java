@@ -84,14 +84,31 @@ public final class ConfigurationPropertySources {
 	 * @see #get(Environment)
 	 */
 	public static void attach(Environment environment) {
+		// 确保传入的 environment 是 ConfigurableEnvironment 类型的实例。
+		// ConfigurableEnvironment 是 Environment 的子接口，提供了更多对 PropertySource 管理和操作的方法
 		Assert.isInstanceOf(ConfigurableEnvironment.class, environment);
+		// 将传入的 environment 转换为 ConfigurableEnvironment，
+		// 并通过 getPropertySources() 方法获取其 PropertySources（属性源）。
+		// MutablePropertySources 是一个 PropertySource 的集合，管理着 Environment 中所有的属性源。
 		MutablePropertySources sources = ((ConfigurableEnvironment) environment).getPropertySources();
+		// 调用 getAttached(sources) 方法，
+		// 检查当前 sources 是否已经附加了一个 ConfigurationPropertySourcesPropertySource，
+		// 用于标识该 PropertySource 是否已经被附加过。
+		// 如果已经附加过，attached 会返回对应的 PropertySource，否则返回 null
 		PropertySource<?> attached = getAttached(sources);
+		// 检查 attached 是否为 null，或者是否与当前的 sources 是相关联的。
+		// 如果没有附加，或者附加的 PropertySource 已经和 sources 不匹配，则进入该条件块
 		if (attached == null || !isUsingSources(attached, sources)) {
+			// 如果条件为真，创建一个新的 ConfigurationPropertySourcesPropertySource，并将 sources 传递给新的 SpringConfigurationPropertySources 对象
+			// ConfigurationPropertySourcesPropertySource 是一个特殊的 PropertySource，用于适配 ConfigurationPropertySource
+			// ATTACHED_PROPERTY_SOURCE_NAME 是附加的 PropertySource 的名称，用于识别该 PropertySource
 			attached = new ConfigurationPropertySourcesPropertySource(ATTACHED_PROPERTY_SOURCE_NAME,
 					new SpringConfigurationPropertySources(sources));
 		}
+		// 无论是否是新创建的 attached，都将名称为 ATTACHED_PROPERTY_SOURCE_NAME 的 PropertySource 从 sources 中移除
+		// 如果该 PropertySource 已经存在，就先移除它，以避免重复附加
 		sources.remove(ATTACHED_PROPERTY_SOURCE_NAME);
+		// 将新创建的或现有的 attached PropertySource 添加到 sources 的最前面。addFirst() 方法确保这个 PropertySource 在所有属性源的优先级最高
 		sources.addFirst(attached);
 	}
 
