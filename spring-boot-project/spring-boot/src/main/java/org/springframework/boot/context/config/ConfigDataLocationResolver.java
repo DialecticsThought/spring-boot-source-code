@@ -50,6 +50,32 @@ import org.springframework.core.io.ResourceLoader;
  * Resolvers may implement {@link Ordered} or use the {@link Order @Order} annotation. The
  * first resolver that supports the given location will be used.
  *
+ * <pre>
+ *  TODO
+ *   作用是解析配置数据（Config Data）的位置
+ *   专门用于从各种源（文件、环境变量、URL 等）解析配置数据的位置（ConfigDataLocation）
+ *   配置数据可以包括 .properties、.yml 文件、外部配置服务器（
+ *   ConfigDataLocationResolver 是一个接口，负责根据给定的 ConfigDataLocation 解析和加载配置源的位置。
+ *   具体来说，它的作用包括：
+ *      1.解析配置位置：根据传入的配置位置，判断配置数据来源是什么（如文件系统、本地资源、远程配置服务器等），并将该位置解析为实际的配置源。
+ *      2.支持多种位置格式：Spring Boot 支持多种不同的配置源，如 application.properties 文件、YAML 文件、环境变量、命令行参数、外部配置服务器（如 Consul、Vault）。ConfigDataLocationResolver 负责抽象出这些不同的配置源格式。
+ *      3.扩展性：你可以自定义实现这个接口来扩展 Spring Boot 的配置加载逻辑，允许应用程序从非标准的位置加载配置数据
+ *   配置数据加载的流程：
+ *   在 Spring Boot 启动过程中，配置数据的加载经过以下几个步骤：
+ * 		初始化阶段：当 Spring Boot 应用程序启动时，会创建 ConfigDataLocationResolver 实例，它会首先检查一些基础的配置源，比如系统属性、环境变量。
+ * 		解析配置位置：根据 ConfigDataLocation 中的描述，ConfigDataLocationResolver 会解析该位置。例如，如果位置是 classpath:application.yml，它会从类路径中找到并解析 application.yml 文件。
+ * 		加载配置数据：解析完位置后，ConfigDataLocationResolver 会调用相应的 ConfigDataLoader 来加载实际的配置数据。
+ * 	TODO
+ * 	  举例说明
+ * 		假设你的应用程序依赖一个远程的配置服务器来加载配置数据，你的 application.yml 文件中可能包含这样的配置：
+ * 		spring:
+ *   	  config:
+ *    		import: "configserver:http://config.example.com"
+ * 		在这种情况下，ConfigDataLocationResolver 的实现会识别 configserver: 这个前缀，
+ * 		并解析出远程配置服务器的 URL（http://config.example.com），
+ * 		然后从远程服务器中获取配置数据并将其加载到应用程序的 Environment 中。
+ * </pre>
+ *
  * @param <R> the location type
  * @author Phillip Webb
  * @author Madhura Bhave

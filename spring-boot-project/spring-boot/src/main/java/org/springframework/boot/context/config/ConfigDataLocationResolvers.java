@@ -41,7 +41,7 @@ import org.springframework.core.io.support.SpringFactoriesLoader;
  * @author Madhura Bhave
  */
 class ConfigDataLocationResolvers {
-
+	// TODO 进入
 	private final List<ConfigDataLocationResolver<?>> resolvers;
 
 	/**
