@@ -441,7 +441,20 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 		}
 	}
 
+	/**
+	 * TODO
+	 *  将会扫描类路径中的 META-INF/spring.factories 文件，
+	 *  找到所有与 AutoConfigurationImportListener 相关的实现类，
+	 *  并将它们实例化成对象，返回一个 List<AutoConfigurationImportListener>
+	 * TODO
+	 *  AutoConfigurationImportListener 是 Spring Boot 的一个接口，
+	 *  允许监听自动配置类导入和排除的事件。通常用于记录、调试或在自动配置发生时执行其他操作
+	 * @return
+	 */
 	protected List<AutoConfigurationImportListener> getAutoConfigurationImportListeners() {
+		// SpringFactoriesLoader.loadFactories(): 这个工具方法是 Spring 用来从类路径中的 META-INF/spring.factories 文件加载指定类型工厂类的工具。
+		// 第一个参数是 AutoConfigurationImportListener.class，它指定要加载的类类型，也就是 AutoConfigurationImportListener。
+		// 第二个参数是 this.beanClassLoader，它提供类加载器，用于从类路径中加载这些实现类。
 		return SpringFactoriesLoader.loadFactories(AutoConfigurationImportListener.class, this.beanClassLoader);
 	}
 
